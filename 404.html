@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream Player</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link rel="stylesheet" href="player-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="player-page-container">
+        <div class="video-wrapper">
+            <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+        </div>
+        <div class="match-info-panel">
+            <h2 id="match-title">Loading Match...</h2>
+            <div class="links-container" id="stream-links">
+                </div>
+        </div>
+    </div>
+    <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
+    <script src="player.js"></script>
+</body>
+</html>

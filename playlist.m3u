@@ -1,0 +1,10 @@
+#EXTM3U
+
+#EXTINF:-1 group-title="Live Cricket" category-slug="cricket" match-slug="skn-vs-guy-cpl" sport-icon="https://i.imgur.com/3DoI8Sg.png" sport-name="Cricket" league-name="Caribbean Premier League" team1-logo="https://ssl.gstatic.com/onebox/media/sports/logos/KOzE-sE-J359t3i6p5n2dw_48x48.png" team1-name="SKN" team2-logo="https://ssl.gstatic.com/onebox/media/sports/logos/7b7AYD1s_3RBmA63remf3g_48x48.png" team2-name="GUY" match-time="2025-08-16T18:00:00+06:00" match-status="upcoming" link1="http://example.com/stream1.m3u8" link-name1="Server 1 HD" link2="http://example.com/stream2.m3u8" link-name2="Server 2", Caribbean Premier League
+#EXTVLCOPT:
+
+#EXTINF:-1 group-title="Live Football" category-slug="football" match-slug="swa-vs-she" sport-icon="https://i.imgur.com/e5k7cFN.png" sport-name="Football" league-name="Championship" team1-logo="https://ssl.gstatic.com/onebox/media/sports/logos/96r24JzIsAfZs1S92r-2Ig_48x48.png" team1-name="Swansea" team2-logo="https://ssl.gstatic.com/onebox/media/sports/logos/N_JdDkSXBv-22iV4sC0H_A_48x48.png" team2-name="Sheffield Utd" match-time="2025-08-16T20:00:00+06:00" match-status="upcoming" link1="http://example.com/stream3.m3u8" link-name1="A Sports" link2="http://example.com/stream4.m3u8" link-name2="Willow TV", Championship
+#EXTVLCOPT:
+
+#EXTINF:-1 group-title="Live Football" category-slug="football" match-slug="sun-vs-whu" sport-icon="https://i.imgur.com/e5k7cFN.png" sport-name="Football" league-name="Premier League" team1-logo="https://ssl.gstatic.com/onebox/media/sports/logos/SXkPgbnSj2eGVEJ1--Q27w_48x48.png" team1-name="Sunderland" team2-logo="https://ssl.gstatic.com/onebox/media/sports/logos/bXyitHBcslsE2BeTj2H-_A_48x48.png" team2-name="West Ham" match-time="2025-08-16T05:00:00+06:00" match-status="live" link1="http://example.com/stream5.m3u8" link-name1="Server HD", Premier League
+#EXTVLCOPT:
