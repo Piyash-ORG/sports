@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/:category/:match",
+      "destination": "/404.html"
+    }
+  ]
+}
