@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,8 +19,10 @@
             <button class="tab-button" data-status="upcoming">Upcoming</button>
         </div>
 
-        <div class="match-list" id="match-list">
-            </div>
+        <div class="match-list" id="match-list"></div>
+
+        <div class="loading-indicator" id="loading">Loading events...</div>
+        <div class="error-message" id="error" style="display: none;"></div>
     </div>
     <script src="main.js"></script>
 </body>
