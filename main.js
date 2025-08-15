@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab-button');
     let allMatches = [];
 
-    fetch('playlist.m3u')
+    fetch('/playlist.m3u')
         .then(response => response.text())
         .then(data => {
             allMatches = parseM3U(data);
