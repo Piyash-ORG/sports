@@ -1,0 +1,66 @@
+{
+  "liveNow": [
+    {
+      "team1": {
+        "name": "Sunderland",
+        "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/7/77/Sunderland_AFC_logo.svg/1200px-Sunderland_AFC_logo.svg.png"
+      },
+      "team2": {
+        "name": "West Ham",
+        "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/c/c2/West_Ham_United_FC_logo.svg/1200px-West_Ham_United_FC_logo.svg.png"
+      },
+      "streams": [
+        {
+          "name": "HD Link 1",
+          "url": "YOUR_M3U8_LINK_HERE_1"
+        },
+        {
+          "name": "SD Link 2",
+          "url": "YOUR_M3U8_LINK_HERE_2"
+        },
+        {
+            "name": "Backup Link",
+            "url": "YOUR_M3U8_LINK_HERE_3"
+        }
+      ]
+    },
+    {
+        "team1": {
+          "name": "Brighton",
+          "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/f/fd/Brighton_%26_Hove_Albion_logo.svg/1200px-Brighton_%26_Hove_Albion_logo.svg.png"
+        },
+        "team2": {
+          "name": "Fulham",
+          "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/F.C._Fulham_crest.svg/1200px-F.C._Fulham_crest.svg.png"
+        },
+        "streams": [
+          {
+            "name": "Server 1",
+            "url": "YOUR_M3U8_LINK_HERE_4"
+          },
+          {
+            "name": "Server 2",
+            "url": "YOUR_M3U8_LINK_HERE_5"
+          }
+        ]
+      }
+  ],
+  "recommended": [
+    {
+      "team1": {
+        "name": "Tondela",
+        "logo": "https://upload.wikimedia.org/wikipedia/en/3/3f/C.D._Tondela_logo.png"
+      },
+      "team2": {
+        "name": "Famalicao",
+        "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/8/87/FC_Famalic%C3%A3o_logo.svg/1200px-FC_Famalic%C3%A3o_logo.svg.png"
+      },
+      "streams": [
+        {
+          "name": "Watch Live",
+          "url": "YOUR_M3U8_LINK_HERE_6"
+        }
+      ]
+    }
+  ]
+}
