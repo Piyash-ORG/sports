@@ -12,20 +12,21 @@
     <div class="player-page-container">
         <div class="main-content">
             <div class="video-wrapper">
-                <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+                <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline></video>
             </div>
             <div class="match-info-panel">
                 <h2 id="match-title">Loading Match...</h2>
-                <div class="links-container" id="stream-links">
-                    </div>
+                <div class="links-container" id="stream-links"></div>
             </div>
         </div>
 
         <div class="other-matches-container">
             <h3>Other Events</h3>
-            <div class="match-list" id="other-matches-list">
-                </div>
+            <div class="match-list" id="other-matches-list"></div>
         </div>
+
+        <div class="loading-indicator" id="loading">Loading stream...</div>
+        <div class="error-message" id="error" style="display: none;"></div>
     </div>
     
     <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
