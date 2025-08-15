@@ -3,125 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Sports Stream</title>
+    <title>CRICfy TV Style Clone</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <header>
-        <h1>CRICfy TV</h1>
-    </header>
-
-    <main>
-        <div class="player-container">
-            <video id="videoPlayer" controls autoplay></video>
+    <div class="app-container">
+        <header class="app-header">
+            <h2>Live Events</h2>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" data-status="all">All (41)</button>
+            <button class="tab-button" data-status="live">Live (0)</button>
+            <button class="tab-button" data-status="recent">Recent (5)</button>
+            <button class="tab-button" data-status="upcoming">Upcoming (36)</button>
         </div>
 
-        <div class="stream-list">
-            <h2>🔴 Live Now</h2>
-            <div id="live-matches">
-                </div>
-            
-            <h2>⭐ Recommended</h2>
-            <div id="recommended-matches">
-                </div>
-        </div>
-    </main>
+        <div class="match-list" id="match-list">
+            </div>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const video = document.getElementById('videoPlayer');
-            const liveMatchesContainer = document.getElementById('live-matches');
-            const recommendedMatchesContainer = document.getElementById('recommended-matches');
-            let hls;
-
-            // JSON ফাইল থেকে ডেটা লোড করার ফাংশন
-            async function loadStreams() {
-                try {
-                    const response = await fetch('streams.json');
-                    const data = await response.json();
-                    
-                    // লাইভ ম্যাচগুলো দেখানো
-                    const liveNow = data.liveNow;
-                    liveMatchesContainer.innerHTML = ''; // পুরোনো ডেটা মুছে ফেলা
-                    liveNow.forEach(match => {
-                        const matchCard = createMatchCard(match);
-                        liveMatchesContainer.appendChild(matchCard);
-                    });
-
-                    // প্রস্তাবিত ম্যাচগুলো দেখানো
-                    const recommended = data.recommended;
-                    recommendedMatchesContainer.innerHTML = '';
-                    recommended.forEach(match => {
-                        const matchCard = createMatchCard(match);
-                        recommendedMatchesContainer.appendChild(matchCard);
-                    });
-
-                    // ডিফল্টভাবে প্রথম লাইভ ম্যাচের প্রথম লিংকটি প্লে করা
-                    if (liveNow.length > 0 && liveNow[0].streams.length > 0) {
-                        playStream(liveNow[0].streams[0].url);
-                    }
-
-                } catch (error) {
-                    console.error('Error loading stream data:', error);
-                    liveMatchesContainer.innerHTML = '<p>Could not load matches.</p>';
-                }
-            }
-            
-            // প্রতিটি ম্যাচের জন্য কার্ড তৈরির ফাংশন
-            function createMatchCard(match) {
-                const card = document.createElement('div');
-                card.className = 'match-card';
-                
-                let streamLinksHTML = match.streams.map(stream => 
-                    `<button class="stream-link" data-url="${stream.url}">${stream.name}</button>`
-                ).join('');
-
-                card.innerHTML = `
-                    <div class="match-info">
-                        <img src="${match.team1.logo}" alt="${match.team1.name}">
-                        <span>${match.team1.name} vs ${match.team2.name}</span>
-                        <img src="${match.team2.logo}" alt="${match.team2.name}">
-                    </div>
-                    <div class="match-links">
-                        ${streamLinksHTML}
-                    </div>
-                `;
-                return card;
-            }
-
-            // m3u8 লিংক প্লে করার ফাংশন
-            function playStream(streamUrl) {
-                if (Hls.isSupported()) {
-                    if (hls) {
-                        hls.destroy();
-                    }
-                    hls = new Hls();
-                    hls.loadSource(streamUrl);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                        video.play();
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = streamUrl;
-                    video.addEventListener('loadedmetadata', function () {
-                        video.play();
-                    });
-                }
-            }
-
-            // কোনো স্ট্রিম লিংকে ক্লিক করলে সেই স্ট্রিমটি প্লে হবে
-            document.body.addEventListener('click', function(event) {
-                if (event.target.classList.contains('stream-link')) {
-                    const url = event.target.getAttribute('data-url');
-                    playStream(url);
-                }
-            });
-
-            // পেজ লোড হওয়ার সাথে সাথে স্ট্রিমগুলো লোড করা
-            loadStreams();
-        });
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>
