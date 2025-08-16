@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateAllMatchTimers, 1000);
 
-            // Hide loader and show content
             pageLoader.style.display = 'none';
             infoPanel.classList.remove('hidden-on-load');
             relatedMatchesContainer.classList.remove('hidden-on-load');
@@ -234,16 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date;
         const diffInSeconds = (matchDate - now) / 1e3;
         let statusHtml = "";
-        const pad = num => num.toString().padStart(2, "0");
-        if (diffInSeconds > 0) {
-            if (diffInSeconds >= 36e3) {
-                statusHtml = `<div class="match-status-text">Starts in ${Math.floor(diffInSeconds/3600)}h ${Math.floor(diffInSeconds%3600/60)}m</div>`;
-            } else {
-                statusHtml = `<div class="timer">${pad(Math.floor(diffInSeconds/3600))}:${pad(Math.floor(diffInSeconds%3600/60))}:${pad(Math.floor(diffInSeconds%60))}</div>`;
-            }
-        } else if (diffInSeconds > -10800) {
+        
+        if (diffInSeconds > 0) { // Upcoming
+            const hours = Math.floor(diffInSeconds / 3600);
+            const minutes = Math.floor((diffInSeconds % 3600) / 60);
+            statusHtml = `<div class="match-status-text">Starts in ${hours}h ${minutes}m</div>`;
+        } else if (diffInSeconds > -10800) { // Live
             statusHtml = '<div class="match-status-text live">Live</div>';
-        } else {
+        } else { // Finished
             statusHtml = '<div class="match-status-text finished">Finished</div>';
         }
         return {
