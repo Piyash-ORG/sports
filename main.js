@@ -1,14 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     const matchListContainer = document.getElementById('match-list');
+    const loadingEl = document.getElementById('loading');
+    const errorEl = document.getElementById('error');
     const tabs = document.querySelectorAll('.tab-button');
     let allMatches = [];
 
-    fetch('/playlist.m3u')
-        .then(response => response.text())
-        .then(data => {
+    async function loadMatches() {
+        try {
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            const response = await fetch('/playlist.m3u');
+            if (!response.ok) throw new Error('Failed to load playlist');
+            const data = await response.text();
             allMatches = parseM3U(data);
             filterAndRender('all'); // Initially show all matches
-        });
+        } catch (err) {
+            errorEl.textContent = 'Error loading events: ' + err.message;
+            errorEl.style.display = 'block';
+        } finally {
+            loadingEl.style.display = 'none';
+        }
+    }
+
+    loadMatches();
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -67,12 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
             card.href = `/${match.categorySlug}/${match.matchSlug}`;
             card.innerHTML = `
                 <div class="card-header">
-                    <img src="${match.sportIcon}" alt="${match.sportName}">
+                    <img src="${match.sportIcon || 'default-icon.png'}" alt="${match.sportName}" onerror="this.src='default-icon.png'">
                     <span>${match.sportName} | ${match.leagueName}</span>
                 </div>
                 <div class="card-body">
                     <div class="team">
-                        <img src="${match.team1Logo}" alt="${match.team1Name}">
+                        <img src="${match.team1Logo || 'default-logo.png'}" alt="${match.team1Name}" onerror="this.src='default-logo.png'">
                         <span class="team-name">${match.team1Name}</span>
                     </div>
                     <div class="match-details">
@@ -81,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="match-status-text ${isLive ? 'live' : ''}">${statusText}</div>
                     </div>
                     <div class="team">
-                        <img src="${match.team2Logo}" alt="${match.team2Name}">
+                        <img src="${match.team2Logo || 'default-logo.png'}" alt="${match.team2Name}" onerror="this.src='default-logo.png'">
                         <span class="team-name">${match.team2Name}</span>
                     </div>
                 </div>
