@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Failed to load playlist');
             const data = await response.text();
             allMatches = parseM3U(data);
-            filterAndRender('all'); // Initially show all matches
+            filterAndRender('all');
         } catch (err) {
             errorEl.textContent = 'Error loading events: ' + err.message;
             errorEl.style.display = 'block';
@@ -38,9 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (status !== 'all') {
             filteredMatches = allMatches.filter(match => {
                 const { isLive } = getMatchTimeAndStatus(match.matchTime);
-                if (status === 'live') return isLive;
-                if (status === 'upcoming') return !isLive;
-                return false;
+                return status === 'live' ? isLive : !isLive;
             });
         }
         renderMatchList(filteredMatches);
@@ -55,6 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const match = line.match(new RegExp(`${attr}="([^"]*)"`));
                     return match ? match[1] : null;
                 };
+                const links = [];
+                for (let i = 1; i <= 10; i++) {
+                    const url = getAttr(`link${i}`);
+                    const name = getAttr(`link-name${i}`) || `Server ${i}`;
+                    if (url) links.push({ url, name });
+                }
                 playlist.push({
                     categorySlug: getAttr('category-slug'),
                     matchSlug: getAttr('match-slug'),
@@ -66,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     team2Logo: getAttr('team2-logo'),
                     team2Name: getAttr('team2-name'),
                     matchTime: getAttr('match-time'),
+                    links: links,
                 });
             }
         }
@@ -107,27 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { time: 'N/A', date: '', statusText: 'Time TBC', isLive: false };
         const matchDate = new Date(isoString);
-        const now = new Date();
+        const now = new Date(); // Current time: 2025-08-16T00:18:00Z (6:18 AM +06:00)
         const diffInSeconds = (matchDate - now) / 1000;
-        
         const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const date = matchDate.toLocaleDateString('en-GB');
-
         let statusText = "Upcoming";
         let isLive = false;
-
-        if (diffInSeconds <= 0 && diffInSeconds > -10800) { // Live if started in the last 3 hours
+        if (diffInSeconds <= 0 && diffInSeconds > -10800) { // Live within 3 hours
             statusText = "Live";
             isLive = true;
         } else if (diffInSeconds > 0) {
             const hours = Math.floor(diffInSeconds / 3600);
             const minutes = Math.floor((diffInSeconds % 3600) / 60);
-            if (hours > 0) statusText = `Starts in ${hours}h ${minutes}m`;
-            else statusText = `Starts in ${minutes}m`;
+            statusText = hours > 0 ? `Starts in ${hours}h ${minutes}m` : `Starts in ${minutes}m`;
         } else {
             statusText = "Finished";
         }
-
         return { time, date, statusText, isLive };
     }
 });
