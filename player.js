@@ -9,10 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const matchTitleEl = document.getElementById('match-title');
-    const matchSelectorContainer = document.getElementById('match-selector-container');
     const linksContainer = document.getElementById('stream-links');
     const relatedMatchesContainer = document.getElementById('related-matches-container');
-    const errorEl = document.getElementById('error');
     
     let allMatches = [];
     let currentMatch = null;
@@ -37,17 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             currentMatch = categoryMatches.find(m => m.matchSlug === matchSlugFromUrl) || categoryMatches[0];
 
-            setupMatchSelector(categoryMatches, currentMatch.matchSlug);
             setupPlayerForMatch(currentMatch);
             renderRelatedMatches(categoryMatches, currentMatch.matchSlug);
             
-            // Start the master timer
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateAllMatchTimers, 1000);
 
         } catch (err) {
-            errorEl.textContent = `Error: ${err.message}`;
-            errorEl.style.display = 'block';
+            console.error(err);
             matchTitleEl.textContent = 'Stream Unavailable';
         }
     }
@@ -69,36 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.toggle('active', index === currentLinkIndex);
             });
         } else {
-            errorEl.textContent = 'All stream links failed for this match.';
-            errorEl.style.display = 'block';
+            console.error('All stream links for this match have failed.');
         }
-    }
-
-    function setupMatchSelector(matches, currentMatchSlug) {
-        matchSelectorContainer.innerHTML = '';
-        const select = document.createElement('select');
-        select.className = 'match-selector';
-        select.addEventListener('change', (e) => {
-            const selectedSlug = e.target.value;
-            window.location.href = `/${matches[0].categorySlug}/${selectedSlug}`;
-        });
-
-        matches.forEach(match => {
-            const option = document.createElement('option');
-            option.value = match.matchSlug;
-            option.textContent = `${match.team1Name} vs ${match.team2Name}`;
-            select.appendChild(option);
-        });
-
-        select.value = currentMatchSlug;
-        matchSelectorContainer.appendChild(select);
     }
 
     function setupPlayerForMatch(match) {
         if (!match) return;
         matchTitleEl.textContent = `${match.team1Name} vs ${match.team2Name}`;
         linksContainer.innerHTML = '';
-        errorEl.style.display = 'none';
 
         currentMatchLinks = match.links || [];
         currentLinkIndex = 0;
@@ -111,13 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 player.src({ type: getMimeType(firstLink.url), src: firstLink.url });
                 player.play().catch(e => console.warn("Autoplay was prevented:", e));
             } else {
-                errorEl.textContent = 'No stream sources found for this live match.';
-                errorEl.style.display = 'block';
+                console.error('No stream sources found for this live match.');
             }
         } else {
             player.reset();
-            errorEl.textContent = 'The stream will begin shortly.';
-            errorEl.style.display = 'block';
+            console.log('Stream will begin shortly.');
         }
 
         currentMatchLinks.forEach((linkInfo, index) => {
@@ -140,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderRelatedMatches(matches, currentMatchSlug) {
         relatedMatchesContainer.innerHTML = '<h3>Live & Upcoming</h3>';
         const matchList = document.createElement('div');
-        matchList.className = 'match-list'; // Use same class as homepage
+        matchList.className = 'match-list';
 
         const otherMatches = matches.filter(m => m.matchSlug !== currentMatchSlug);
         
@@ -149,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Sorting: Live first, then upcoming by time
         otherMatches.sort((a, b) => {
              const statusA = getMatchTimeAndStatus(a.matchTime);
              const statusB = getMatchTimeAndStatus(b.matchTime);
@@ -158,11 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
              return new Date(a.matchTime) - new Date(b.matchTime);
         });
 
-        otherMatches.forEach(match => {
+        // Limit to a maximum of 6 matches
+        const limitedMatches = otherMatches.slice(0, 6);
+
+        limitedMatches.forEach(match => {
             const card = document.createElement('a');
             card.className = 'match-card';
             card.href = `/${match.categorySlug}/${match.matchSlug}`;
-            // Add data-attribute for the timer
             card.setAttribute('data-match-time', match.matchTime);
             card.innerHTML = `
                 <div class="card-header">
@@ -187,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             matchList.appendChild(card);
         });
         relatedMatchesContainer.appendChild(matchList);
-        updateAllMatchTimers(); // Initial timer update
+        updateAllMatchTimers();
     }
 
     function updateAllMatchTimers() {
@@ -210,20 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffInSeconds = (matchDate - now) / 1000;
         
         let statusHtml = '';
-        
         const pad = (num) => num.toString().padStart(2, '0');
 
-        if (diffInSeconds > 0) { // Upcoming
+        if (diffInSeconds > 0) {
             const hours = Math.floor(diffInSeconds / 3600);
             const minutes = Math.floor((diffInSeconds % 3600) / 60);
             const seconds = Math.floor(diffInSeconds % 60);
-
-            if (diffInSeconds >= 36000) { // More than 10 hours
+            if (diffInSeconds >= 36000) {
                  statusHtml = `<div class="match-status-text">In ${hours}h ${minutes}m</div>`;
-            } else { // Less than 10 hours, show HH:MM:SS
+            } else {
                  statusHtml = `<div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>`;
             }
-        } else if (diffInSeconds > -10800) { // Live (within 3 hours from start)
+        } else if (diffInSeconds > -10800) {
             const liveSeconds = Math.abs(diffInSeconds);
             const hours = Math.floor(liveSeconds / 3600);
             const minutes = Math.floor((liveSeconds % 3600) / 60);
@@ -232,14 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="match-status-text live">Live</div>
                 <div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>
             `;
-        } else { // Finished
+        } else {
             statusHtml = `<div class="match-status-text finished">Finished</div>`;
         }
-        
         return { statusHtml };
     }
     
-    // This is a simplified helper, mainly for sorting
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { isLive: false };
         const matchDate = new Date(isoString);
