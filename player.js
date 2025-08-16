@@ -16,14 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Player is ready');
     });
 
-    const linksContainer = document.getElementById('stream-links');
     const matchTitleEl = document.getElementById('match-title');
     const matchSelector = document.getElementById('match-selector');
-    const otherMatchesContainer = document.getElementById('other-matches-list');
+    const qualitySelector = document.getElementById('quality-selector');
+    const qualitySelect = document.getElementById('quality-select');
+    const linksContainer = document.getElementById('stream-links');
+    const matchContainer = document.getElementById('match-container');
     const loadingEl = document.getElementById('loading');
     const errorEl = document.getElementById('error');
     let currentMatchLinks = [];
     let currentMatch = null;
+    let currentLinkIndex = 0;
     let allMatches = [];
 
     const path = window.location.pathname;
@@ -44,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupMatchSelector(categoryMatches);
                 currentMatch = categoryMatches[0];
                 setupPlayer(currentMatch);
-                renderOtherMatches(allMatches.filter(m => m !== currentMatch));
+                renderMatchContainer(categoryMatches);
             } else {
                 throw new Error('No matches found for this category');
             }
@@ -60,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadMatch();
 
-    player.on('error', () => {
-        console.error(`Link ${currentLinkIndex + 1} failed.`);
+    player.on('error', (e) => {
+        console.error(`Player error: ${e}`, player.error());
         tryNextLink();
     });
 
@@ -74,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.link-button').forEach((btn, index) => {
                 btn.classList.toggle('active', index === currentLinkIndex);
             });
-            player.play().catch(() => console.log('Autoplay prevented.'));
+            player.play().catch(err => console.error('Play failed:', err));
         } else {
             console.error('All links failed.');
             matchTitleEl.textContent = "Stream unavailable.";
@@ -90,13 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
         select.addEventListener('change', (e) => {
             const selectedMatchSlug = e.target.value;
             currentMatch = matches.find(m => m.matchSlug === selectedMatchSlug);
+            currentLinkIndex = 0;
             setupPlayer(currentMatch);
+            renderMatchContainer(matches); // Update match container on change
         });
 
         matches.forEach(match => {
             const option = document.createElement('option');
             option.value = match.matchSlug;
-            option.textContent = `${match.team1Name} vs ${match.team2Name} (${getMatchTimeAndStatus(match.matchTime).statusText})`;
+            const { statusText } = getMatchTimeAndStatus(match.matchTime);
+            option.textContent = `${match.team1Name} vs ${match.team2Name} (${statusText})`;
             select.appendChild(option);
         });
 
@@ -111,13 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
         currentMatchLinks = match.links || [];
         currentLinkIndex = 0;
 
+        console.log('Current Match Links:', currentMatchLinks);
         if (currentMatchLinks.length > 0) {
-            player.src({ type: getMimeType(currentMatchLinks[0].url), src: currentMatchLinks[0].url });
-            player.play().catch(() => console.log('Autoplay prevented, user interaction needed.'));
+            const firstLink = currentMatchLinks[0];
+            player.src({ type: getMimeType(firstLink.url), src: firstLink.url });
+            player.play().catch(err => {
+                console.error('Autoplay failed:', err);
+                errorEl.textContent = 'Stream failed to load. Check the URL or try another server.';
+                errorEl.style.display = 'block';
+            });
+            setupQualitySelector(currentMatchLinks[0].url); // Set quality options
         } else {
             matchTitleEl.textContent = "No streams available.";
             errorEl.textContent = 'No stream links found for this match.';
             errorEl.style.display = 'block';
+            qualitySelector.style.display = 'none';
         }
 
         currentMatchLinks.forEach((linkInfo, index) => {
@@ -128,52 +142,81 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => {
                 currentLinkIndex = index;
                 player.src({ type: getMimeType(linkInfo.url), src: linkInfo.url });
-                player.play().catch(() => console.log('Autoplay prevented.'));
+                player.play().catch(err => console.error('Manual play failed:', err));
                 document.querySelectorAll('.link-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
+                setupQualitySelector(linkInfo.url); // Update quality on link change
             });
             linksContainer.appendChild(button);
         });
+
+        // Show/hide links container based on number of links
+        linksContainer.style.display = currentMatchLinks.length > 0 ? 'flex' : 'none';
     }
 
-    function renderOtherMatches(matches) {
-        otherMatchesContainer.innerHTML = '';
-        matches.sort((a, b) => {
-            const aStatus = getMatchTimeAndStatus(a.matchTime);
-            const bStatus = getMatchTimeAndStatus(b.matchTime);
-            if (aStatus.isLive && !bStatus.isLive) return -1;
-            if (!aStatus.isLive && bStatus.isLive) return 1;
-            return new Date(a.matchTime) - new Date(b.matchTime);
+    function setupQualitySelector(url) {
+        qualitySelect.innerHTML = '';
+        // Example quality levels (customize based on your stream)
+        const qualities = [
+            { label: 'Auto', url: url },
+            { label: '720p', url: url.replace(/\.m3u8$/, '_720p.m3u8') || url },
+            { label: '480p', url: url.replace(/\.m3u8$/, '_480p.m3u8') || url },
+            { label: '360p', url: url.replace(/\.m3u8$/, '_360p.m3u8') || url }
+        ];
+        qualities.forEach(q => {
+            const option = document.createElement('option');
+            option.value = q.url;
+            option.textContent = q.label;
+            qualitySelect.appendChild(option);
+        });
+        qualitySelect.value = url;
+        qualitySelector.style.display = 'flex';
+        qualitySelect.addEventListener('change', (e) => {
+            player.src({ type: getMimeType(e.target.value), src: e.target.value });
+            player.play().catch(err => console.error('Quality change failed:', err));
+        });
+    }
+
+    function renderMatchContainer(matches) {
+        matchContainer.innerHTML = '<h3>Live & Upcoming Matches</h3>';
+        const matchList = document.createElement('div');
+        matchList.className = 'match-list';
+
+        const liveMatches = matches.filter(m => getMatchTimeAndStatus(m.matchTime).isLive);
+        const upcomingMatches = matches.filter(m => !getMatchTimeAndStatus(m.matchTime).isLive);
+
+        [liveMatches, upcomingMatches].forEach((matchGroup, index) => {
+            if (matchGroup.length > 0) {
+                const sectionTitle = index === 0 ? 'Live' : 'Upcoming';
+                const section = document.createElement('div');
+                section.innerHTML = `<h4>${sectionTitle}</h4>`;
+                matchGroup.forEach(match => {
+                    const { time, date, statusText, isLive } = getMatchTimeAndStatus(match.matchTime);
+                    const card = document.createElement('a');
+                    card.className = 'match-card';
+                    card.href = `/${match.categorySlug}/${match.matchSlug}`;
+                    card.innerHTML = `
+                        <div class="team">
+                            <img src="${match.team1Logo || 'default-logo.png'}" alt="${match.team1Name}" onerror="this.src='default-logo.png'">
+                            <span class="team-name">${match.team1Name}</span>
+                        </div>
+                        <div class="match-details">
+                            <div class="match-time">${time}</div>
+                            <div class="match-date">${date}</div>
+                            <div class="match-status-text ${isLive ? 'live' : ''}">${statusText}</div>
+                        </div>
+                        <div class="team">
+                            <img src="${match.team2Logo || 'default-logo.png'}" alt="${match.team2Name}" onerror="this.src='default-logo.png'">
+                            <span class="team-name">${match.team2Name}</span>
+                        </div>
+                    `;
+                    section.appendChild(card);
+                });
+                matchList.appendChild(section);
+            }
         });
 
-        matches.forEach(match => {
-            const { time, date, statusText, isLive } = getMatchTimeAndStatus(match.matchTime);
-            const card = document.createElement('a');
-            card.className = 'match-card';
-            card.href = `/${match.categorySlug}/${match.matchSlug}`;
-            card.innerHTML = `
-                <div class="card-header">
-                    <img src="${match.sportIcon || 'default-icon.png'}" alt="${match.sportName}" onerror="this.src='default-icon.png'">
-                    <span>${match.sportName} | ${match.leagueName}</span>
-                </div>
-                <div class="card-body">
-                    <div class="team">
-                        <img src="${match.team1Logo || 'default-logo.png'}" alt="${match.team1Name}" onerror="this.src='default-logo.png'">
-                        <span class="team-name">${match.team1Name}</span>
-                    </div>
-                    <div class="match-details">
-                        <div class="match-time">${time}</div>
-                        <div class="match-date">${date}</div>
-                        <div class="match-status-text ${isLive ? 'live' : ''}">${statusText}</div>
-                    </div>
-                    <div class="team">
-                        <img src="${match.team2Logo || 'default-logo.png'}" alt="${match.team2Name}" onerror="this.src='default-icon.png'">
-                        <span class="team-name">${match.team2Name}</span>
-                    </div>
-                </div>
-            `;
-            otherMatchesContainer.appendChild(card);
-        });
+        matchContainer.appendChild(matchList);
     }
 
     function getMimeType(url) {
@@ -220,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { time: 'N/A', date: '', statusText: 'Time TBC', isLive: false };
         const matchDate = new Date(isoString);
-        const now = new Date('2025-08-16T00:36:00Z'); // 6:36 AM +06:00
+        const now = new Date('2025-08-16T01:33:00Z'); // 7:33 AM +06:00
         const diffInSeconds = (matchDate - now) / 1000;
         const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const date = matchDate.toLocaleDateString('en-GB');
