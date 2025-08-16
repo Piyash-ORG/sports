@@ -2,10 +2,6 @@
   "rewrites": [
     {
       "source": "/:category/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/:category/:match",
       "destination": "/404.html"
     }
   ]
