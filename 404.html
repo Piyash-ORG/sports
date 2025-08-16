@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Stream Player</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/player-style.css"> <!-- Absolute path for Vercel -->
+    <link rel="stylesheet" href="/player-style.css">
 </head>
 <body>
     <div class="player-page-container">
@@ -19,18 +19,17 @@
             <div class="match-info-panel">
                 <h2 id="match-title">Select a Match to Stream</h2>
                 <div class="match-selector" id="match-selector"></div>
+                <div class="quality-selector" id="quality-selector" style="display: none;">
+                    <label for="quality-select">Quality: </label>
+                    <select id="quality-select" class="quality-select"></select>
+                </div>
                 <div class="links-container" id="stream-links"></div>
             </div>
+            <div class="match-container" id="match-container"></div>
         </div>
-        <div class="other-matches-container">
-            <h3>Other Events</h3>
-            <div class="match-list" id="other-matches-list"></div>
-        </div>
-        <div class="loading-indicator" id="loading">Loading streams...</div>
-        <div class="error-message" id="error" style="display: none;"></div>
     </div>
     
     <script src="https://vjs.zencdn.net/8.10.0/video.js"></script>
-    <script src="/player.js"></script> <!-- Absolute path for Vercel -->
+    <script src="/player.js"></script>
 </body>
 </html>
