@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof videojs === 'undefined') {
+        console.error('Video.js is not loaded. Check the script URL.');
+        return;
+    }
+
     const player = videojs('live-player', {
         fluid: true,
         responsive: true,
@@ -7,7 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
         controls: true,
         bigPlayButton: true,
         errorDisplay: false
+    }, function() {
+        console.log('Player is ready');
     });
+
     const linksContainer = document.getElementById('stream-links');
     const matchTitleEl = document.getElementById('match-title');
     const matchSelector = document.getElementById('match-selector');
@@ -20,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const path = window.location.pathname;
     const parts = path.split('/').filter(p => p);
-    const categorySlug = parts[0] || 'football'; // Default to 'football' if no category
+    const categorySlug = parts[0] || 'football';
 
     async function loadMatch() {
         try {
@@ -34,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const categoryMatches = allMatches.filter(m => m.categorySlug === categorySlug);
             if (categoryMatches.length > 0) {
                 setupMatchSelector(categoryMatches);
-                // Auto-select first match
                 currentMatch = categoryMatches[0];
                 setupPlayer(currentMatch);
                 renderOtherMatches(allMatches.filter(m => m !== currentMatch));
@@ -94,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         matchSelector.appendChild(select);
-        select.value = matches[0].matchSlug; // Default to first match
+        select.value = matches[0].matchSlug;
     }
 
     function setupPlayer(match) {
@@ -143,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { time, date, statusText, isLive } = getMatchTimeAndStatus(match.matchTime);
             const card = document.createElement('a');
             card.className = 'match-card';
-            card.href = `/${match.categorySlug}/${match.matchSlug}`; // Optional: Keep individual match URL
+            card.href = `/${match.categorySlug}/${match.matchSlug}`;
             card.innerHTML = `
                 <div class="card-header">
                     <img src="${match.sportIcon || 'default-icon.png'}" alt="${match.sportName}" onerror="this.src='default-icon.png'">
@@ -160,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="match-status-text ${isLive ? 'live' : ''}">${statusText}</div>
                     </div>
                     <div class="team">
-                        <img src="${match.team2Logo || 'default-logo.png'}" alt="${match.team2Name}" onerror="this.src='default-logo.png'">
+                        <img src="${match.team2Logo || 'default-logo.png'}" alt="${match.team2Name}" onerror="this.src='default-icon.png'">
                         <span class="team-name">${match.team2Name}</span>
                     </div>
                 </div>
@@ -213,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { time: 'N/A', date: '', statusText: 'Time TBC', isLive: false };
         const matchDate = new Date(isoString);
-        const now = new Date('2025-08-16T00:30:00Z'); // 6:30 AM +06:00
+        const now = new Date('2025-08-16T00:36:00Z'); // 6:36 AM +06:00
         const diffInSeconds = (matchDate - now) / 1000;
         const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const date = matchDate.toLocaleDateString('en-GB');
