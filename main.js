@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="card-body">
                     <div class="team">
-                        <img src="${match.team1Logo}" alt="${match.team1Name}" onerror="this.src='https.via.placeholder.com/60'">
+                        <img src="${match.team1Logo}" alt="${match.team1Name}" onerror="this.src='https://via.placeholder.com/60'">
                         <span class="team-name">${match.team1Name}</span>
                     </div>
                     <div class="match-details">
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                            </div>
                     </div>
                     <div class="team">
-                        <img src="${match.team2Logo}" alt="${match.team2Name}" onerror="this.src='https.via.placeholder.com/60'">
+                        <img src="${match.team2Logo}" alt="${match.team2Name}" onerror="this.src='https://via.placeholder.com/60'">
                         <span class="team-name">${match.team2Name}</span>
                     </div>
                 </div>
@@ -158,19 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffInSeconds = (matchDate - now) / 1000;
         
         let statusHtml = '';
-        const pad = (num) => num.toString().padStart(2, '0');
 
-        if (diffInSeconds > 0) {
+        if (diffInSeconds > 0) { // Upcoming
             const hours = Math.floor(diffInSeconds / 3600);
             const minutes = Math.floor((diffInSeconds % 3600) / 60);
-            const seconds = Math.floor(diffInSeconds % 60);
-
-            if (diffInSeconds >= 36000) { // More than 10 hours
-                 statusHtml = `<div class="match-status-text">Starts in ${hours}h ${minutes}m</div>`;
-            } else { // Less than 10 hours, show HH:MM:SS
-                 statusHtml = `<div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>`;
-            }
-        } else if (diffInSeconds > -10800) { // Live (within 3 hours from start)
+            statusHtml = `<div class="match-status-text">Starts in ${hours}h ${minutes}m</div>`;
+        } else if (diffInSeconds > -10800) { // Live
             statusHtml = `<div class="match-status-text live">Live</div>`;
         } else { // Finished
             statusHtml = `<div class="match-status-text finished">Finished</div>`;
