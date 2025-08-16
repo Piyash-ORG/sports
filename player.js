@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderRelatedMatches(matches, currentMatchSlug) {
-        relatedMatchesContainer.innerHTML = '<h3>Live & Upcoming</h3>';
+        relatedMatchesContainer.innerHTML = '<h3></h3>';
         const matchList = document.createElement('div');
         matchList.className = 'match-list';
 
