@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorEl = document.getElementById('error');
     const tabs = document.querySelectorAll('.tab-button');
     let allMatches = [];
+    let timerInterval = null;
 
     async function loadMatches() {
         try {
@@ -14,6 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.text();
             allMatches = parseM3U(data);
             filterAndRender('all');
+
+            // Start the master timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateAllMatchTimers, 1000);
+
         } catch (err) {
             errorEl.textContent = 'Error loading events: ' + err.message;
             errorEl.style.display = 'block';
@@ -37,9 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let filteredMatches = allMatches;
         if (status !== 'all') {
             filteredMatches = allMatches.filter(match => {
-                const { isLive } = getMatchTimeAndStatus(match.matchTime);
+                const { isLive, statusText } = getMatchTimeAndStatus(match.matchTime);
                 if (status === 'live') return isLive;
-                if (status === 'upcoming') return !isLive && getMatchTimeAndStatus(match.matchTime).statusText !== "Finished";
+                if (status === 'upcoming') return !isLive && statusText !== "Finished";
                 return false;
             });
         }
@@ -62,17 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (url) links.push({ url, name });
                 }
                 playlist.push({
-                    categorySlug: getAttr('category-slug'),
-                    matchSlug: getAttr('match-slug'),
-                    sportIcon: getAttr('sport-icon'),
-                    sportName: getAttr('sport-name'),
-                    leagueName: getAttr('league-name'),
-                    team1Logo: getAttr('team1-logo'),
-                    team1Name: getAttr('team1-name'),
-                    team2Logo: getAttr('team2-logo'),
-                    team2Name: getAttr('team2-name'),
-                    matchTime: getAttr('match-time'),
-                    links: links,
+                    categorySlug: getAttr('category-slug'), matchSlug: getAttr('match-slug'), sportIcon: getAttr('sport-icon'), sportName: getAttr('sport-name'), leagueName: getAttr('league-name'), team1Logo: getAttr('team1-logo'), team1Name: getAttr('team1-name'), team2Logo: getAttr('team2-logo'), team2Name: getAttr('team2-name'), matchTime: getAttr('match-time'), links: links,
                 });
             }
         }
@@ -86,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const sortedMatches = matches.sort((a, b) => {
+        matches.sort((a, b) => {
              const statusA = getMatchTimeAndStatus(a.matchTime);
              const statusB = getMatchTimeAndStatus(b.matchTime);
              if (statusA.isLive && !statusB.isLive) return -1;
@@ -94,11 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
              return new Date(a.matchTime) - new Date(b.matchTime);
         });
 
-        sortedMatches.forEach(match => {
-            const { time, date, statusText, isLive } = getMatchTimeAndStatus(match.matchTime);
+        matches.forEach(match => {
             const card = document.createElement('a');
             card.className = 'match-card';
             card.href = `/${match.categorySlug}/${match.matchSlug}`;
+            // Add data-attribute for the timer
+            card.setAttribute('data-match-time', match.matchTime);
             card.innerHTML = `
                 <div class="card-header">
                     <img src="${match.sportIcon}" alt="${match.sportName}" onerror="this.style.display='none'">
@@ -110,9 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="team-name">${match.team1Name}</span>
                     </div>
                     <div class="match-details">
-                        <div class="match-time">${time}</div>
-                        <div class="match-date">${date}</div>
-                        <div class="match-status-text ${isLive ? 'live' : ''}">${statusText}</div>
+                        <div class="status-display">
+                           </div>
                     </div>
                     <div class="team">
                         <img src="${match.team2Logo}" alt="${match.team2Name}" onerror="this.src='https.via.placeholder.com/60'">
@@ -122,29 +118,68 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             matchListContainer.appendChild(card);
         });
+        updateAllMatchTimers(); // Initial timer update
     }
 
-    function getMatchTimeAndStatus(isoString) {
-        if (!isoString) return { time: 'N/A', date: '', statusText: 'TBC', isLive: false };
+    function updateAllMatchTimers() {
+        const matchCards = document.querySelectorAll('[data-match-time]');
+        matchCards.forEach(card => {
+            const timeString = card.dataset.matchTime;
+            const statusContainer = card.querySelector('.status-display');
+            if (timeString && statusContainer) {
+                const { statusHtml } = formatMatchTime(timeString);
+                statusContainer.innerHTML = statusHtml;
+            }
+        });
+    }
+
+    function formatMatchTime(isoString) {
+        if (!isoString) return { statusHtml: '<span>TBC</span>' };
+        
         const matchDate = new Date(isoString);
         const now = new Date();
         const diffInSeconds = (matchDate - now) / 1000;
-        const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const date = matchDate.toLocaleDateString('en-GB');
+        
+        let statusHtml = '';
+        
+        const pad = (num) => num.toString().padStart(2, '0');
 
-        let statusText = "Upcoming";
-        let isLive = false;
-
-        if (diffInSeconds <= 0 && diffInSeconds > -10800) { // Live if started within the last 3 hours
-            statusText = "Live";
-            isLive = true;
-        } else if (diffInSeconds > 0) {
+        if (diffInSeconds > 0) { // Upcoming
             const hours = Math.floor(diffInSeconds / 3600);
             const minutes = Math.floor((diffInSeconds % 3600) / 60);
-            statusText = hours > 0 ? `In ${hours}h ${minutes}m` : `In ${minutes}m`;
-        } else {
-            statusText = "Finished";
+            const seconds = Math.floor(diffInSeconds % 60);
+
+            if (diffInSeconds >= 36000) { // More than 10 hours
+                 statusHtml = `<div class="match-status-text">In ${hours}h ${minutes}m</div>`;
+            } else { // Less than 10 hours, show HH:MM:SS
+                 statusHtml = `<div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>`;
+            }
+        } else if (diffInSeconds > -10800) { // Live (within 3 hours from start)
+            const liveSeconds = Math.abs(diffInSeconds);
+            const hours = Math.floor(liveSeconds / 3600);
+            const minutes = Math.floor((liveSeconds % 3600) / 60);
+            const seconds = Math.floor(liveSeconds % 60);
+            statusHtml = `
+                <div class="match-status-text live">Live</div>
+                <div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>
+            `;
+        } else { // Finished
+            statusHtml = `<div class="match-status-text finished">Finished</div>`;
         }
-        return { time, date, statusText, isLive };
+        
+        return { statusHtml };
+    }
+    
+    // This is a simplified helper, mainly for filtering and sorting
+    function getMatchTimeAndStatus(isoString) {
+        if (!isoString) return { isLive: false, statusText: 'Finished' };
+        const matchDate = new Date(isoString);
+        const now = new Date();
+        const diffInSeconds = (matchDate - now) / 1000;
+        const isLive = diffInSeconds <= 0 && diffInSeconds > -10800;
+        let statusText = "Upcoming";
+        if (isLive) statusText = "Live";
+        else if (diffInSeconds < -10800) statusText = "Finished";
+        return { isLive, statusText };
     }
 });
