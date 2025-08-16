@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/:category/",
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:category/:matchSlug",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/:category",
       "destination": "/404.html"
     }
   ]
