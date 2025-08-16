@@ -27,6 +27,12 @@ body {
     gap: 20px;
 }
 
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .video-wrapper {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -127,7 +133,7 @@ body {
     margin: 20px 0;
 }
 
-/* Mobile */
+/* Responsive Design */
 @media (max-width: 767px) {
     .player-page-container { padding: 10px; flex-direction: column; }
     .video-wrapper { aspect-ratio: 16 / 9; }
@@ -136,26 +142,21 @@ body {
     .link-button { padding: 10px 18px; font-size: 0.9em; }
 }
 
-/* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
     .player-page-container { flex-direction: row; align-items: flex-start; gap: 15px; }
-    .main-content { flex: 2; display: flex; flex-direction: column; gap: 15px; }
+    .main-content { flex: 2; }
     .other-matches-container { flex: 1; }
 }
 
-/* Desktop */
 @media (min-width: 1024px) {
     .player-page-container { flex-direction: row; align-items: flex-start; gap: 25px; padding: 25px; }
-    .main-content { flex: 3; display: flex; flex-direction: column; gap: 20px; }
+    .main-content { flex: 3; }
     .other-matches-container { flex: 1.5; max-height: 80vh; }
-    .video-wrapper { border-radius: 16px; }
 }
 
-/* TV/Large Screens */
 @media (min-width: 1920px) {
     .player-page-container { max-width: 2000px; padding: 40px; }
     #match-title { font-size: 2em; }
     .link-button { padding: 15px 30px; font-size: 1.2em; }
     .other-matches-container h3 { font-size: 1.8em; }
-    .match-card { padding: 25px; font-size: 1.2em; }
 }
