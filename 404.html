@@ -8,18 +8,23 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <div id="page-loader" class="loader-container">
+        <div class="spinner"></div>
+    </div>
+
     <div class="player-page-container">
         <div class="main-content">
             <div class="video-wrapper">
                 <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline>
-                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>.</p>
+                    <p class="vjs-no-js">To view this video please enable JavaScript.</p>
                 </video>
             </div>
-            <div class="match-info-panel">
-                <h2 id="match-title">Loading Match...</h2>
+            
+            <div class="match-info-panel hidden-on-load">
                 <div class="links-container" id="stream-links"></div>
-                </div>
-            <div class="related-matches-container" id="related-matches-container"></div>
+            </div>
+
+            <div class="related-matches-container hidden-on-load" id="related-matches-container"></div>
         </div>
     </div>
     
