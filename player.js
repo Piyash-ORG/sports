@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
         fluid: true,
         responsive: true,
         autoplay: true,
-        muted: false, // Allow autoplay with sound if possible
+        muted: true, // Start muted to allow autoplay
         controls: true,
         bigPlayButton: true,
-        errorDisplay: false // Custom error handling
+        errorDisplay: false
     });
     const linksContainer = document.getElementById('stream-links');
     const matchTitleEl = document.getElementById('match-title');
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const path = window.location.pathname;
     const parts = path.split('/').filter(p => p);
-    
+
     async function loadMatch() {
         try {
             loadingEl.style.display = 'block';
@@ -28,16 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Failed to load playlist');
             const data = await response.text();
             allMatches = parseM3U(data);
+            console.log('All Matches:', allMatches); // Debug
             if (parts.length === 2) {
                 const [categorySlug, matchSlug] = parts;
                 const currentMatch = allMatches.find(m => m.categorySlug === categorySlug && m.matchSlug === matchSlug);
-                
-                if (currentMatch) {
+                console.log('Current Match:', currentMatch); // Debug
+                if (currentMatch && currentMatch.links.length > 0) {
                     setupPlayer(currentMatch);
                     const otherMatches = allMatches.filter(m => m.matchSlug !== matchSlug);
                     renderOtherMatches(otherMatches);
+                } else if (currentMatch) {
+                    throw new Error('No stream links available for this match');
                 } else {
-                    throw new Error('Match Not Found');
+                    throw new Error('Match not found');
                 }
             } else {
                 throw new Error('Invalid URL');
@@ -64,14 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Trying link ${currentLinkIndex + 1}...`);
             const nextLink = currentMatchLinks[currentLinkIndex];
             player.src({ type: getMimeType(nextLink.url), src: nextLink.url });
-            
             document.querySelectorAll('.link-button').forEach((btn, index) => {
                 btn.classList.toggle('active', index === currentLinkIndex);
             });
+            player.play().catch(() => console.log('Autoplay prevented.'));
         } else {
             console.error('All links failed.');
-            matchTitleEl.textContent = "Stream is currently unavailable.";
-            errorEl.textContent = 'All streams failed. Please try again later.';
+            matchTitleEl.textContent = "Stream unavailable.";
+            errorEl.textContent = 'All streams failed. Try again later.';
             errorEl.style.display = 'block';
         }
     }
@@ -79,13 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupPlayer(match) {
         matchTitleEl.textContent = `${match.team1Name} vs ${match.team2Name}`;
         linksContainer.innerHTML = '';
-        currentMatchLinks = match.links;
+        currentMatchLinks = match.links || [];
         currentLinkIndex = 0;
 
         if (currentMatchLinks.length > 0) {
             player.src({ type: getMimeType(currentMatchLinks[0].url), src: currentMatchLinks[0].url });
+            player.play().catch(() => console.log('Autoplay prevented, user interaction needed.'));
+        } else {
+            matchTitleEl.textContent = "No streams available.";
+            errorEl.textContent = 'No stream links found for this match.';
+            errorEl.style.display = 'block';
         }
-        
+
         currentMatchLinks.forEach((linkInfo, index) => {
             const button = document.createElement('button');
             button.textContent = linkInfo.name;
@@ -94,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => {
                 currentLinkIndex = index;
                 player.src({ type: getMimeType(linkInfo.url), src: linkInfo.url });
+                player.play().catch(() => console.log('Autoplay prevented.'));
                 document.querySelectorAll('.link-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
             });
@@ -103,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderOtherMatches(matches) {
         otherMatchesContainer.innerHTML = '';
-        
         matches.sort((a, b) => {
             const aStatus = getMatchTimeAndStatus(a.matchTime);
             const bStatus = getMatchTimeAndStatus(b.matchTime);
@@ -147,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (url.includes('.mp4')) return 'video/mp4';
         if (url.includes('.webm')) return 'video/webm';
         if (url.includes('.ts')) return 'video/MP2T';
-        return 'video/mp4'; // Fallback
+        return 'video/mp4';
     }
 
     function parseM3U(data) {
@@ -162,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const links = [];
                 for (let i = 1; i <= 10; i++) {
                     const url = getAttr(`link${i}`);
-                    const name = getAttr(`link-name${i}`) || `Link ${i}`;
+                    const name = getAttr(`link-name${i}`) || `Server ${i}`;
                     if (url) links.push({ url, name });
                 }
                 playlist.push({
@@ -186,17 +194,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { time: 'N/A', date: '', statusText: 'Time TBC', isLive: false };
         const matchDate = new Date(isoString);
-        const now = new Date();
+        const now = new Date('2025-08-16T00:18:00Z'); // Current time: 6:18 AM +06:00
         const diffInSeconds = (matchDate - now) / 1000;
         const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const date = matchDate.toLocaleDateString('en-GB');
-        let statusText = "Upcoming"; let isLive = false;
-        if (diffInSeconds <= 0 && diffInSeconds > -10800) { statusText = "Live"; isLive = true; } 
+        let statusText = "Upcoming";
+        let isLive = false;
+        if (diffInSeconds <= 0 && diffInSeconds > -10800) { statusText = "Live"; isLive = true; }
         else if (diffInSeconds > 0) {
             const hours = Math.floor(diffInSeconds / 3600);
             const minutes = Math.floor((diffInSeconds % 3600) / 60);
-            if (hours > 0) statusText = `Starts in ${hours}h ${minutes}m`; else statusText = `Starts in ${minutes}m`;
-        } else { statusText = "Finished"; }
+            statusText = hours > 0 ? `Starts in ${hours}h ${minutes}m` : `Starts in ${minutes}m`;
+        } else {
+            statusText = "Finished";
+        }
         return { time, date, statusText, isLive };
     }
 });
