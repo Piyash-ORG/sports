@@ -3,52 +3,49 @@ document.addEventListener('DOMContentLoaded', () => {
         fluid: true,
         responsive: true,
         autoplay: true,
-        muted: true, // Start muted to allow autoplay
+        muted: true,
         controls: true,
         bigPlayButton: true,
         errorDisplay: false
     });
     const linksContainer = document.getElementById('stream-links');
     const matchTitleEl = document.getElementById('match-title');
+    const matchSelector = document.getElementById('match-selector');
     const otherMatchesContainer = document.getElementById('other-matches-list');
     const loadingEl = document.getElementById('loading');
     const errorEl = document.getElementById('error');
     let currentMatchLinks = [];
-    let currentLinkIndex = 0;
+    let currentMatch = null;
     let allMatches = [];
 
     const path = window.location.pathname;
     const parts = path.split('/').filter(p => p);
+    const categorySlug = parts[0] || 'football'; // Default to 'football' if no category
 
     async function loadMatch() {
         try {
             loadingEl.style.display = 'block';
             errorEl.style.display = 'none';
             const response = await fetch('/playlist.m3u');
-            if (!response.ok) throw new Error('Failed to load playlist');
+            if (!response.ok) throw new Error('Failed to load playlist: ' + response.status);
             const data = await response.text();
             allMatches = parseM3U(data);
-            console.log('All Matches:', allMatches); // Debug
-            if (parts.length === 2) {
-                const [categorySlug, matchSlug] = parts;
-                const currentMatch = allMatches.find(m => m.categorySlug === categorySlug && m.matchSlug === matchSlug);
-                console.log('Current Match:', currentMatch); // Debug
-                if (currentMatch && currentMatch.links.length > 0) {
-                    setupPlayer(currentMatch);
-                    const otherMatches = allMatches.filter(m => m.matchSlug !== matchSlug);
-                    renderOtherMatches(otherMatches);
-                } else if (currentMatch) {
-                    throw new Error('No stream links available for this match');
-                } else {
-                    throw new Error('Match not found');
-                }
+            console.log('All Matches:', allMatches);
+            const categoryMatches = allMatches.filter(m => m.categorySlug === categorySlug);
+            if (categoryMatches.length > 0) {
+                setupMatchSelector(categoryMatches);
+                // Auto-select first match
+                currentMatch = categoryMatches[0];
+                setupPlayer(currentMatch);
+                renderOtherMatches(allMatches.filter(m => m !== currentMatch));
             } else {
-                throw new Error('Invalid URL');
+                throw new Error('No matches found for this category');
             }
         } catch (err) {
+            console.error('Error in loadMatch:', err);
             errorEl.textContent = 'Error: ' + err.message;
             errorEl.style.display = 'block';
-            matchTitleEl.textContent = 'Stream Unavailable';
+            matchTitleEl.textContent = 'No streams available';
         } finally {
             loadingEl.style.display = 'none';
         }
@@ -79,7 +76,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function setupMatchSelector(matches) {
+        matchSelector.innerHTML = '';
+        const select = document.createElement('select');
+        select.className = 'match-select';
+        select.addEventListener('change', (e) => {
+            const selectedMatchSlug = e.target.value;
+            currentMatch = matches.find(m => m.matchSlug === selectedMatchSlug);
+            setupPlayer(currentMatch);
+        });
+
+        matches.forEach(match => {
+            const option = document.createElement('option');
+            option.value = match.matchSlug;
+            option.textContent = `${match.team1Name} vs ${match.team2Name} (${getMatchTimeAndStatus(match.matchTime).statusText})`;
+            select.appendChild(option);
+        });
+
+        matchSelector.appendChild(select);
+        select.value = matches[0].matchSlug; // Default to first match
+    }
+
     function setupPlayer(match) {
+        if (!match) return;
         matchTitleEl.textContent = `${match.team1Name} vs ${match.team2Name}`;
         linksContainer.innerHTML = '';
         currentMatchLinks = match.links || [];
@@ -124,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { time, date, statusText, isLive } = getMatchTimeAndStatus(match.matchTime);
             const card = document.createElement('a');
             card.className = 'match-card';
-            card.href = `/${match.categorySlug}/${match.matchSlug}`;
+            card.href = `/${match.categorySlug}/${match.matchSlug}`; // Optional: Keep individual match URL
             card.innerHTML = `
                 <div class="card-header">
                     <img src="${match.sportIcon || 'default-icon.png'}" alt="${match.sportName}" onerror="this.src='default-icon.png'">
@@ -194,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMatchTimeAndStatus(isoString) {
         if (!isoString) return { time: 'N/A', date: '', statusText: 'Time TBC', isLive: false };
         const matchDate = new Date(isoString);
-        const now = new Date('2025-08-16T00:18:00Z'); // Current time: 6:18 AM +06:00
+        const now = new Date('2025-08-16T00:30:00Z'); // 6:30 AM +06:00
         const diffInSeconds = (matchDate - now) / 1000;
         const time = matchDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         const date = matchDate.toLocaleDateString('en-GB');
