@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fluid: true,
         responsive: true,
         autoplay: true,
-        muted: true
+        muted: false,
     });
 
     const linksContainer = document.getElementById('stream-links');
