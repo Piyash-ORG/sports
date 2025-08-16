@@ -178,7 +178,7 @@ body {
     margin: 20px 0;
 }
 
-/* Mobile */
+/* Responsive Design */
 @media (max-width: 767px) {
     .app-container { padding: 10px; }
     .match-list { grid-template-columns: 1fr; }
@@ -186,17 +186,14 @@ body {
     .team img { width: 50px; height: 50px; }
 }
 
-/* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
     .match-list { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Desktop */
 @media (min-width: 1024px) {
     .match-list { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* TV/Large Screens */
 @media (min-width: 1920px) {
     .app-container { max-width: 1600px; }
     .match-card { padding: 30px; font-size: 1.2em; }
