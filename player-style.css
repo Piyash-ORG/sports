@@ -8,7 +8,6 @@
     --live-color: #ff3b30;
     --shadow-color: rgba(0, 0, 0, 0.5);
 }
-/* Previous CSS remains same, add this */
 
 body {
     margin: 0;
@@ -43,7 +42,7 @@ body {
     box-shadow: 0 4px 12px var(--shadow-color);
 }
 
-#live-player {
+.video-js {
     width: 100%;
     height: 100%;
 }
@@ -59,6 +58,24 @@ body {
     margin: 0 0 20px 0;
     text-align: center;
     font-size: 1.5em;
+}
+
+.match-selector {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.match-selector:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--accent-color);
 }
 
 .links-container {
@@ -161,21 +178,3 @@ body {
     .link-button { padding: 15px 30px; font-size: 1.2em; }
     .other-matches-container h3 { font-size: 1.8em; }
 }
-/* Previous CSS remains same, add this */
-.match-select {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 25px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 1em;
-    cursor: pointer;
-}
-
-.match-select:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 5px var(--accent-color);
-                            }
