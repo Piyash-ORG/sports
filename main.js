@@ -69,7 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 playlist.push({
-                    categorySlug: getAttr('category-slug'), matchSlug: getAttr('match-slug'), sportIcon: getAttr('sport-icon'), sportName: getAttr('sport-name'), leagueName: getAttr('league-name'), team1Logo: getAttr('team1-logo'), team1Name: getAttr('team1-name'), team2Logo: getAttr('team2-logo'), team2Name: getAttr('team2-name'), matchTime: getAttr('match-time'),
+                    categorySlug: getAttr('category-slug'),
+                    matchSlug: getAttr('match-slug'),
+                    sportIcon: getAttr('sport-icon'),
+                    sportName: getAttr('sport-name'),
+                    leagueName: getAttr('league-name'),
+                    team1Logo: getAttr('team1-logo'),
+                    team1Name: getAttr('team1-name'),
+                    team2Logo: getAttr('team2-logo'),
+                    team2Name: getAttr('team2-name'),
+                    matchTime: getAttr('match-time'),
                     links: links,
                 });
             }
@@ -128,9 +137,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         updateAllMatchTimers();
     }
-    
-    // Timer and helper functions remain unchanged from the previous version.
-    function updateAllMatchTimers(){const matchCards=document.querySelectorAll("[data-match-time]");matchCards.forEach(card=>{const timeString=card.dataset.matchTime,statusContainer=card.querySelector(".status-display");timeString&&statusContainer&&(statusContainer.innerHTML=formatMatchTime(timeString).statusHtml)})}
-    function formatMatchTime(isoString){if(!isoString)return{statusHtml:"<span>TBC</span>"};const matchDate=new Date(isoString),now=new Date,diffInSeconds=(matchDate-now)/1e3;let statusHtml="";const pad=num=>num.toString().padStart(2,"0");return diffInSeconds>0?diffInSeconds>=36e3?statusHtml=`<div class="match-status-text">Starts in ${Math.floor(diffInSeconds/3600)}h ${Math.floor(diffInSeconds%3600/60)}m</div>`:statusHtml=`<div class="timer">${pad(Math.floor(diffInSeconds/3600))}:${pad(Math.floor(diffInSeconds%3600/60))}:${pad(Math.floor(diffInSeconds%60))}</div>`:diffInSeconds>-10800?statusHtml=`<div class="match-status-text live">Live</div>`:statusHtml=`<div class="match-status-text finished">Finished</div>`,{statusHtml:statusHtml}}
-    function getMatchTimeAndStatus(isoString){if(!isoString)return{isLive:!1,statusText:"Finished"};const matchDate=new Date(isoString),now=new Date,diffInSeconds=(matchDate-now)/1e3;const isLive=diffInSeconds<=0&&diffInSeconds>-10800;let statusText="Upcoming";return isLive?statusText="Live":diffInSeconds<-10800&&(statusText="Finished"),{isLive:isLive,statusText:statusText}}
+
+    function updateAllMatchTimers() {
+        const matchCards = document.querySelectorAll('[data-match-time]');
+        matchCards.forEach(card => {
+            const timeString = card.dataset.matchTime;
+            const statusContainer = card.querySelector('.status-display');
+            if (timeString && statusContainer) {
+                const { statusHtml } = formatMatchTime(timeString);
+                statusContainer.innerHTML = statusHtml;
+            }
+        });
+    }
+
+    function formatMatchTime(isoString) {
+        if (!isoString) return { statusHtml: '<span>TBC</span>' };
+        
+        const matchDate = new Date(isoString);
+        const now = new Date();
+        const diffInSeconds = (matchDate - now) / 1000;
+        
+        let statusHtml = '';
+        const pad = (num) => num.toString().padStart(2, '0');
+
+        if (diffInSeconds > 0) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            const minutes = Math.floor((diffInSeconds % 3600) / 60);
+            const seconds = Math.floor(diffInSeconds % 60);
+
+            if (diffInSeconds >= 36000) { // More than 10 hours
+                 statusHtml = `<div class="match-status-text">Starts in ${hours}h ${minutes}m</div>`;
+            } else { // Less than 10 hours, show HH:MM:SS
+                 statusHtml = `<div class="timer">${pad(hours)}:${pad(minutes)}:${pad(seconds)}</div>`;
+            }
+        } else if (diffInSeconds > -10800) { // Live (within 3 hours from start)
+            statusHtml = `<div class="match-status-text live">Live</div>`;
+        } else { // Finished
+            statusHtml = `<div class="match-status-text finished">Finished</div>`;
+        }
+        
+        return { statusHtml };
+    }
+
+    function getMatchTimeAndStatus(isoString) {
+        if (!isoString) return { isLive: false, statusText: 'Finished' };
+        const matchDate = new Date(isoString);
+        const now = new Date();
+        const diffInSeconds = (matchDate - now) / 1000;
+        const isLive = diffInSeconds <= 0 && diffInSeconds > -10800;
+        let statusText = "Upcoming";
+        if (isLive) {
+            statusText = "Live";
+        } else if (diffInSeconds < -10800) {
+            statusText = "Finished";
+        }
+        return { isLive: isLive, statusText: statusText };
+    }
 });
