@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateAllMatchTimers, 1000);
 
+            // Hide loader and show content
             pageLoader.style.display = 'none';
             infoPanel.classList.remove('hidden-on-load');
             relatedMatchesContainer.classList.remove('hidden-on-load');
