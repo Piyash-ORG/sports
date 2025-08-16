@@ -134,7 +134,7 @@ body {
     text-align: center;
 }
 
-/* --- Corrected Match Details Style (with Box) --- */
+/* --- Match Details Style --- */
 .match-details {
     text-align: center;
 }
@@ -153,12 +153,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-}
-.timer {
-    font-size: 1em;
-    font-weight: 500;
-    letter-spacing: 1px;
-    color: var(--accent-color);
 }
 .match-status-text {
     background-color: var(--border-color);
@@ -260,7 +254,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Restored Box-shadow Animation */
+/* Animations */
 @keyframes pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7);
