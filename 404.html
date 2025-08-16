@@ -5,27 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Stream Player</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/player-style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="player-page-container">
         <div class="main-content">
             <div class="video-wrapper">
                 <video id="live-player" class="video-js vjs-big-play-centered" controls preload="auto" playsinline>
-                    <source src="" type="application/x-mpegURL">
-                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>.</p>
                 </video>
             </div>
             <div class="match-info-panel">
-                <h2 id="match-title">Select a Match to Stream</h2>
-                <div class="match-selector" id="match-selector"></div>
-                <div class="quality-selector" id="quality-selector" style="display: none;">
-                    <label for="quality-select">Quality: </label>
-                    <select id="quality-select" class="quality-select"></select>
-                </div>
+                <h2 id="match-title">Loading Match...</h2>
+                <div class="match-selector-container" id="match-selector-container"></div>
                 <div class="links-container" id="stream-links"></div>
+                 <div class="error-message" id="error" style="display: none;"></div>
             </div>
-            <div class="match-container" id="match-container"></div>
+            <div class="related-matches-container" id="related-matches-container"></div>
         </div>
     </div>
     
