@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadAndSetupPlayer() {
         try {
-            const response = await fetch('/streams/live-events.m3u');
+            const response = await fetch('/111.m3u');
             if (!response.ok) throw new Error('Playlist fetch failed');
             const data = await response.text();
             allMatches = parseM3U(data);
