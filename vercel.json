@@ -12,5 +12,9 @@
       "source": "/:category",
       "destination": "/404.html"
     }
+     {
+      "source": "/:category",
+      "destination": "/streams/live-events.m3u"
+    }
   ]
 }
