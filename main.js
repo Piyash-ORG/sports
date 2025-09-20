@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             loadingEl.style.display = 'block';
             errorEl.style.display = 'none';
-            const response = await fetch('/111.m3u');
+            const response = await fetch('/playlists.m3u');
             if (!response.ok) throw new Error('Failed to load playlist');
             const data = await response.text();
             allMatches = parseM3U(data);
