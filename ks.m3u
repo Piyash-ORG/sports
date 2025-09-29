@@ -1,4 +1,12 @@
-
+#EXTM3U
+#EXTGRP:Kurulus Osman - Season 1
+#EXTINF:-1,S1E1 - Kurulus Osman
+http://example.com/video1.m3u8
+#EXTINF:-1,S1E2 - Kurulus Osman
+http://example.com/video2.m3u8
+#EXTGRP:Kurulus Osman - Season 2
+#EXTINF:-1,S2E1 - Kurulus Osman
+http://example.com/video3.m3u8
 #//------- Season 4 (Reverse) --------//#
 #EXTINF:-1 tvg-logo="https://i.ibb.co.com/8nKVB1pg/KS-S04-E33.png" group-title="Kuruluş Osman",S04E33 —Kurulus Osman
 https://stream.mux.com/vDHpzeipVduQpiWft7v01ELFg65Sg9JT1vV8MtmQpSUo.m3u8
